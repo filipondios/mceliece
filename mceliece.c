@@ -1,12 +1,8 @@
-#include <stdlib.h>
 #include <sys/random.h>
 #include <string.h>
 #include <stdint.h>
 #include "matrix.h"
 #include "mceliece.h"
-
-#define getCipherLen(pt_len) (pt_len*14)
-#define getPlainTextLen(ct_len) (ct_len/14)
 
 static const uint8_t Ht[7][3] = {
   { 0, 0, 1 },
@@ -25,8 +21,8 @@ static const uint8_t G[4][7] = {
   { 1, 1, 0, 1, 0, 0, 1 }
 };
 
-static uint8_t S[4][4];
-static uint8_t P[7][7];
+static uint8_t (*S)[4];
+static uint8_t (*P)[7];
 static uint8_t SGP[4][7];
 
 uint8_t isSInvertible(const uint8_t mat[4][4]) {
@@ -86,8 +82,10 @@ void shuffleP() {
   }
 }
 
-void init_encCtx(void) {
+void init_encCtx(uint8_t Sin[4][4], uint8_t Pin[7][7]) {
   // Generar S y P
+  S = Sin;
+  P = Pin;
   generateS();
   generatePi();
   shuffleP();
@@ -99,9 +97,9 @@ void init_encCtx(void) {
 }
 
 void init_decCtx(uint8_t Sin[4][4], uint8_t Pin[7][7]) {
-  cpyMatrix(4, 4, Sin, S);
-  cpyMatrix(7, 7, Pin, P);
-  inverse(4, S);
+  S = Sin;
+  P = Pin;
+  getSinverse(S);
 }
 
 void encryptSemiWord(uint8_t mensaje[4], uint8_t cipher[7]) {
@@ -210,41 +208,4 @@ void decrypt(uint8_t* ct, size_t ct_len, uint8_t* pt) {
     word |= (wb[3]);
     pt[i] = word;
   }
-}
-
-int main(void) {
-  // Mensaje original
-  uint8_t mensaje[] = "pepe";
-  size_t mensaje_len = sizeof(mensaje);
-
-  // Mensaje cifrado
-  size_t cipher_len;
-  uint8_t* cipher;
-
-  // Mensaje recuperado
-  uint8_t* recovered;
-  size_t recovered_len;
-
-  // Obtener las longitudes del mensaje encriptado
-  // y del texto desencriptado.
-  cipher_len = getCipherLen(mensaje_len);
-  recovered_len = getPlainTextLen(cipher_len);
-
-  // Resercar memoria para el mensaje encriptado
-  // y del texto desencriptado.
-  cipher = malloc(sizeof(uint8_t)*cipher_len);
-  recovered = malloc(sizeof(uint8_t)*recovered_len);
-
-  init_encCtx();
-  encrypt(mensaje, mensaje_len, cipher);
-  printVector(mensaje_len, mensaje, "Mensaje original");  
-  printVector(cipher_len, cipher, "Mensaje encriptado");  
-
-  init_decCtx(S, P);
-  decrypt(cipher, cipher_len, recovered);
-  free(cipher);
-  
-  printVector(recovered_len, recovered, "Mensaje recuperado");  
-  free(recovered);
-  return 0;
 }
