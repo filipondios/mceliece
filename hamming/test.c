@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-unsigned char mensaje[] = "pruebapruebaprueba";
+unsigned char mensaje[] = "test";
 int len = sizeof(mensaje);
 int cipher_len = sizeof(mensaje)*14;
 
@@ -48,7 +48,7 @@ int main(void) {
     index += 7;
   }
 
-  printf("Mensaje codificado:");
+  printf("Encoded message:");
   for (int i = 0; i<cipher_len; i++) {
     printf("%u ", cipher[i]);
   }printf("\n");
@@ -80,7 +80,7 @@ int main(void) {
     recovered[i] = word;
   }
 
-  printf("Mensaje decodificado: ");
+  printf("Decoded message: ");
   for (int i = 0; i<len; i++) {
     printf("%c", recovered[i]);
   }printf("\n");

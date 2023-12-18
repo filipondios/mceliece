@@ -46,10 +46,7 @@ void decode(uint8_t c[7], uint8_t m[4]) {
     goto SYS; 
 
   // Obtener el indice del error
-  for (int i =0; i<7; i++)
-    if(!memcmp(error, Ht[i],3))
-      ierr = i;
-  c[ierr] ^= 1;
+  c[(error[0]<<2 | error[1]<<1 | error[2])-1] ^= 1;
   
   // Obtener un x0 tal que 
   // x0 * G = c (x0 = m)
