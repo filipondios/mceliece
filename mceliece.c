@@ -1,10 +1,9 @@
-#include <stddef.h>
 #include <stdlib.h>
 #include <sys/random.h>
 #include <string.h>
 #include <stdint.h>
-#include <stdio.h>
 #include "matrix.h"
+#include "mceliece.h"
 
 #define getCipherLen(pt_len) (pt_len*14)
 #define getPlainTextLen(ct_len) (ct_len/14)
