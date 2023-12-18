@@ -70,16 +70,16 @@ void row_operations(uint8_t N, uint8_t gauss[N][N*2], uint8_t pivot) {
     }
 }
 
+/*
 void swap_rows(uint8_t N, uint8_t gauss[N][N*2], uint8_t row1, uint8_t row2) {
     for (int j = 0; j < N*2; j++) {
         uint8_t temp = gauss[row1][j];
         gauss[row1][j] = gauss[row2][j];
         gauss[row2][j] = temp;
     }
-}
+}*/
 
 void inverse(int N, uint8_t matriz[N][N]) {
-  
   uint8_t gauss[N][N*2];
 
   for (uint8_t i =0; i<N; i++) {
@@ -99,8 +99,22 @@ void inverse(int N, uint8_t matriz[N][N]) {
     }
 
     if (pivot != -1) {
-      swap_rows(N, gauss, i, pivot);
-      row_operations(N, gauss, i);
+      // Swap rows
+      for (int j = 0; j < N*2; j++) {
+        uint8_t temp = gauss[i][j];
+        gauss[i][j] = gauss[pivot][j];
+        gauss[pivot][j] = temp;
+      }
+
+      // Row operations
+      for (int j = 0; j < N; j++) {
+        if (j != i) {
+          int factor = gauss[j][i];
+          for (int k = 0; k < N*2; k++) {
+            gauss[j][k] = (gauss[j][k] + factor * gauss[i][k])%2;
+          }
+        }
+      }
     }
   }
 
