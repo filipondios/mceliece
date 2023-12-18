@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "matrix.h"
-#include "mceliece.h"
+#include "../matrix.h"
+#include "../mceliece.h"
 
 void printMatrix(uint8_t n, uint8_t m, uint8_t mat[n][m], char* message);
 void printVector(uint8_t n, uint8_t mat[n], char* message);
