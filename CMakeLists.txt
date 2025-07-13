@@ -10,6 +10,11 @@ add_library(mceliece_lib ${SOURCES} ${HEADERS})
 add_executable(mceliece "source/main.c")
 target_link_libraries(mceliece PRIVATE mceliece_lib)
 
+add_subdirectory(libsodium)
+target_link_libraries(mceliece_lib PRIVATE sodium)
+target_link_libraries(mceliece PRIVATE sodium)
+
+# Function to apply security flags to targets
 function(apply_security_flags)
   foreach(TARGET ${ARGV})
     if (CMAKE_C_COMPILER_ID MATCHES "MSVC")
@@ -48,5 +53,6 @@ function(apply_security_flags)
 endfunction()
 
 apply_security_flags(mceliece_lib mceliece)
+set_property(TARGET sodium PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET mceliece_lib PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET mceliece PROPERTY POSITION_INDEPENDENT_CODE ON)
