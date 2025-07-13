@@ -1,38 +1,54 @@
 # McEliece
 
-## About
+In this repository you will find the implementation of the
+[McEliece cryptosystem](https://en.wikipedia.org/wiki/McEliece_cryptosystem)
+using the common ``(7,4,3)`` [Hamming codes](https://en.wikipedia.org/wiki/Hamming_code)
+combination. Please note that this code is for demonstration purposes only and not for other use. 
 
-In this repository you will find the implementation of the <a href="https://en.wikipedia.org/wiki/McEliece_cryptosystem">McEliece cryptosystem</a>
-with Hamming codes. In the same repository, you will find an implementation of the Hamming code (7,4,3) used in the
-cryptosystem. Please note that this code is for demonstration purposes only and not for other use.
+> [!NOTE]
+> This code is not recommended for use in document or text encryption of relevance,
+> since, among many reasons, Hamming codes are not the best option to implement in
+> the McEliece criptosistem. For example, [Goppa](https://en.wikipedia.org/wiki/Binary_Goppa_code)
+> or [Reed Solomon](https://tomverbeure.github.io/2022/08/07/Reed-Solomon.html) codes
+> offer greater complexity and therefore greater security.
 
-## Considerations
+## Building with CMake
 
-This code is not recommended for use in document or text encryption of relevance, since, among many reasons, Hamming
-codes are not the best option to implement in the McEliece criptosistema. For example, the codes of Goppa or 
-Reed Solomon offer greater complexity and therefore greater security
+### Windows (Visual Studio)
 
-## Structure
+You can open the project folder directly in **Visual Studio** on Windows without any modifications.
+Visual Studio automatically detects the `CMakePresets.json` file. It supports building and running
+in all configurations (x64, x86, Debug and Release).
 
-The content of the different files of the repository will be described below:
+### Linux
+Similar to Windows, there are existing presets for compiling the project (you can see them in
+[CMakePresets.json](CMakePresets.json)). Once you choose a preset, you can compile the project.
+For example:
 
-- <ins>hamming/</ins>: Folder with Hamming code encoding and decoding functions (7,4,3).
-- <ins>test/</ins>: Folder with some tests to check if McEliece works.
-- <ins>matrix.c</ins>: Functions for operations between matrices and vectors.
-- <ins>mceliece.c</ins>: All cryptosystem functions.
-- <ins>mceliece.h/</ins>: Functions to encrypt and decrypt information with McEliece.
+```sh
+# Compile the project for x64 Release mode
+cmake --preset x64-release-linux
+cmake --build --preset x64-release-linux
 
-## Test
-
-In the `hamming` folder there are tests for the implemented Hamming code (7,4,3) and in the `test` folder there are 
-tests for all McEliece. You can test both by running their makefile:
-
-```bash
-# Probar Hamming
-cd hamming/
-make test
-
-# Probar McEliece
-cd test/
-make test
+# Compile the project for x86 Debug mode
+cmake --preset x86-debug-linux
+cmake --build --preset x86-debug-linux
 ```
+
+Once you run the command `cmake --preset <preset>`, the `out/build/<preset>/compile_commands.json`
+file will be created. This file is used by the [clangd](https://github.com/clangd/clangd) LSP
+to provide C/C++ IDE features to many editors. However, this file needs to be in the
+root of the project. The best option is to create a symlink to the file:
+
+```sh
+cd /path/to/recons
+PRESET="x64-release-linux"
+cmake --preset $PRESET
+ln -s out/build/$PRESET/compile_commands.json compile_commands.json
+```
+
+> [!NOTE]
+> After running build commands (either in Windows or Linux) with a preset `<preset>`, you should
+> find the application executable file at `out/build/<preset>/` and the tests executable file at
+> `out/build/<preset>/tests/`. The application binary must be named `mceliece` and the tests binary
+> `mceliece_tests`.
