@@ -20,7 +20,7 @@ and [libsodium 1.0.20](https://github.com/jedisct1/libsodium/tree/9511c982fb1d04
 
 ```bash
 git clone https://github.com/filipondios/mceliece
-git git submodule update --init --recursive
+git submodule update --init --recursive
 ```
 
 ### Windows (Visual Studio)
