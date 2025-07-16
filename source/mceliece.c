@@ -1,42 +1,81 @@
+#include <string.h>
+#include <stdbool.h>
 #include <sodium/randombytes.h>
 
-#define getbit(word, bit) ((0x80 >> (bit)) & (word))
-#define norm(word)        ((word) ? 1 : 0)
-#define get(m, i, j)      (getbit((m)[i], (j)))
-#define nget(m, i, j)     (norm(getbit((m)[i], (j))))
+// Bit operations over a matrix position (i, j)
+#define GET(m, i, j)   (((m[i]) >> (j)) & 0x1) 
+#define SET(m, i, j)   (m[i] |= (0x1 << (j)))
+#define UNSET(m, i, j) (m[i] &= ~(0x1 << (j)))
 
-//static uint8_t P [7] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02 };
+// System matrices dims
+#define MATRIX_S_DIM 4
+#define MATRIX_H_DIM 4
+#define MATRIX_P_DIM 7
+#define MATRIX_G_DIM 4
+
+static uint8_t P [7] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02 };
 static const uint8_t H [3] = { 0x1E, 0x66, 0xAA };
 static const uint8_t G [4] = { 0xE0, 0x98, 0x54, 0xD2 };
 
-static void generate_s(const uint8_t s[4]) {
+
+bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
+    memcpy(b, m, MATRIX_S_DIM);
+
+    for (int col = 0; col < MATRIX_S_DIM; ++col) {
+        int pivot = -1;
+
+        for (int row = col; row < MATRIX_S_DIM; ++row) {
+            if (GET(b, row, col)) {
+                pivot = row;
+                break;
+            }
+        }
+
+        if (pivot == -1)
+            return false;
+
+        if (pivot != col) {
+            const uint8_t tmp = b[col];
+            b[col] = b[pivot];
+            b[pivot] = tmp;
+        }
+
+        for (int row = 0; row < MATRIX_S_DIM; ++row) {
+            if (row != col && GET(b, row, col))
+                b[row] ^= b[col];
+        }
+    }
+    return true;
+}
+
+
+static void generate_s(uint8_t s[MATRIX_S_DIM]) {
   for (;;) {
-    // Fill with randomness (4x4)
-    randombytes_buf(s, sizeof(s));
+    randombytes_buf(s, MATRIX_S_DIM);
+    uint8_t dummy[MATRIX_S_DIM];
 
-    // Ensure the matrix is invertible, where determinant = 0
-    const uint8_t a00 = get(s,0,0), a01 = get(s,0,1), a02 = get(s,0,2), a03 = get(s,0,3);
-    const uint8_t a10 = get(s,1,0), a11 = get(s,1,1), a12 = get(s,1,2), a13 = get(s,1,3);
-    const uint8_t a20 = get(s,2,0), a21 = get(s,2,1), a22 = get(s,2,2), a23 = get(s,2,3);
-    const uint8_t a30 = get(s,3,0), a31 = get(s,3,1), a32 = get(s,3,2), a33 = get(s,3,3);
-
-    const uint8_t s00 = (a11 & (a22 & a33 ^ a23 & a32))
-      ^ (a12 & (a21 & a33 ^ a23 & a31))
-      ^ (a13 & (a21 & a32 ^ a22 & a31));
-
-    const uint8_t s01 = (a10 & (a22 & a33 ^ a23 & a32))
-      ^ (a12 & (a20 & a33 ^ a23 & a30))
-      ^ (a13 & (a20 & a32 ^ a22 & a30));
-
-    const uint8_t s02 = (a10 & (a21 & a33 ^ a23 & a31))
-      ^ (a11 & (a20 & a33 ^ a23 & a30))
-      ^ (a13 & (a20 & a31 ^ a21 & a30));
-
-    const uint8_t s03 = (a10 & (a21 & a32 ^ a22 & a31))
-      ^ (a11 & (a20 & a32 ^ a22 & a30))
-      ^ (a12 & (a20 & a31 ^ a21 & a30));
-
-    if ((a00 & s00) ^ (a01 & s01) ^ (a02 & s02) ^ (a03 & s03))
-      break;
+    if (gauss(s, dummy))
+        break;
   }
 }
+
+static void generate_p(uint8_t p[MATRIX_P_DIM]) {
+    uint8_t idxs[MATRIX_P_DIM] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 };
+    const uint8_t id [7] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40 };
+    memcpy(p, id, MATRIX_P_DIM);
+
+    // Fisher-Yates shuffle
+    for (uint8_t i = MATRIX_P_DIM - 1; i > 0; --i) {
+        const uint8_t j = randombytes_random() % (i + 1);
+        const uint8_t tmp = idxs[i];
+        idxs[i] = idxs[j];
+        idxs[j] = tmp;
+    }
+
+    for (uint8_t i = 0; i < MATRIX_P_DIM; ++i)
+        p[i] = id[idxs[i]];
+}
+
+
+
+
