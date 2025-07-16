@@ -14,6 +14,15 @@ combination. Please note that this code is for demonstration purposes only and n
 
 ## Building with CMake
 
+First of all, after cloning this project's repository, you need to initialize the git submodules, which in
+this case are the dependencies [check 0.15.2](https://github.com/libcheck/check/tree/455005dc29dc6727de7ee36fee4b49a13b39f73f)
+and [libsodium 1.0.20](https://github.com/jedisct1/libsodium/tree/9511c982fb1d046470a8b42aa36556cdb7da15de).
+
+```bash
+git clone https://github.com/filipondios/mceliece
+git git submodule update --init --recursive
+```
+
 ### Windows (Visual Studio)
 
 You can open the project folder directly in **Visual Studio** on Windows without any modifications.
@@ -41,7 +50,7 @@ to provide C/C++ IDE features to many editors. However, this file needs to be in
 root of the project. The best option is to create a symlink to the file:
 
 ```sh
-cd /path/to/recons
+cd /path/to/mceliece
 PRESET="x64-release-linux"
 cmake --preset $PRESET
 ln -s out/build/$PRESET/compile_commands.json compile_commands.json
