@@ -19,7 +19,7 @@ function(apply_security_flags)
   foreach(TARGET ${ARGV})
     if (CMAKE_C_COMPILER_ID MATCHES "MSVC")
       target_compile_options(${TARGET} PRIVATE 
-        /GS /guard:cf /DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA /W4 /wd4996
+        /GS /guard:cf /DYNAMICBASE /NXCOMPAT /W4 /wd4996
         $<$<CONFIG:Debug>:/Zi /Od /DDEBUG>
         $<$<CONFIG:Release>:/O2 /DNDEBUG /WX>
       )
