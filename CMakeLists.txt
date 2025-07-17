@@ -11,6 +11,11 @@ add_executable(mceliece "source/main.c")
 target_link_libraries(mceliece PRIVATE mceliece_lib)
 
 add_subdirectory(libsodium)
+add_subdirectory(check)
+
+enable_testing()
+add_subdirectory(testing)
+
 target_link_libraries(mceliece_lib PRIVATE sodium)
 target_link_libraries(mceliece PRIVATE sodium)
 
