@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
 
 // Square matrices (S, P)
 #define MATRIX_S_DIM 4
