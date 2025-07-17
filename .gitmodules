@@ -1,3 +1,6 @@
 [submodule "libsodium"]
 	path = libsodium
 	url = https://github.com/robinlinden/libsodium-cmake.git
+[submodule "check"]
+	path = check
+	url = https://github.com/libcheck/check
