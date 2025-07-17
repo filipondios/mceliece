@@ -1,6 +1,7 @@
-[submodule "libsodium"]
-	path = libsodium
+
+[submodule "external/libsodium"]
+	path = external/libsodium
 	url = https://github.com/robinlinden/libsodium-cmake.git
-[submodule "check"]
-	path = check
+[submodule "external/check"]
+	path = external/check
 	url = https://github.com/libcheck/check
