@@ -13,12 +13,10 @@ combination. Please note that this code is for demonstration purposes only and n
 > offer greater complexity and therefore greater security.
 
 > [!NOTE]
-> In this new version of my implementation, the cryptosystem matrices are implemented as simple arrays 
-> of 8-bit words, where each array element represents a row of up to 8 positions. Since the cryptosystem
-> matrices have dimensions `S=(4x4)`, `P=(7x7)`, and `G=(4x7)`, they do not fully occupy all 8 bits of the
-> row, so the least significant bits are used, with the least significant bit corresponding to the first
-> position of the row. In my first version, 8-bit word matrices were used where each position `(i,j)`
-> contained either a 1 or a 0, wasting space and being less efficient when accessing the data.
+> In this version, the cryptosystem matrices are stored as arrays of 8-bit words, each representing
+> a row of up to 8 bits. Since matrices `S=(4×4)`, `P=(7×7)`, and `G=(4×7)` don’t use all 8 bits,
+> only the least significant bits are used, with the LSB as the first position. The previous version
+> stored each bit separately, wasting space and reducing access efficiency.
 
 ## Building with CMake
 
