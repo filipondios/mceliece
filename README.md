@@ -12,6 +12,12 @@ combination. Please note that this code is for demonstration purposes only and n
 > or [Reed Solomon](https://tomverbeure.github.io/2022/08/07/Reed-Solomon.html) codes
 > offer greater complexity and therefore greater security.
 
+> [!NOTE]
+> In this version, the cryptosystem matrices are stored as arrays of 8-bit words, each representing
+> a row of up to 8 bits. Since matrices `S=(4×4)`, `P=(7×7)`, and `G=(4×7)` don’t use all 8 bits,
+> only the least significant bits are used, with the LSB as the first position. The previous version
+> stored each bit separately, wasting space and reducing access efficiency.
+
 ## Building with CMake
 
 First of all, after cloning this project's repository, you need to initialize the git submodules, which in
