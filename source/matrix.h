@@ -5,9 +5,9 @@
 // Square matrices (S, P)
 #define MATRIX_S_DIM 4
 #define MATRIX_P_DIM 7
-// Hamming code matrix
-#define MATRIX_H_ROWS 3
-#define MATRIX_H_COLS 7
+// Hamming code *transpose* matrix
+#define MATRIX_H_ROWS 7
+#define MATRIX_H_COLS 3
 // Code generator matrix
 #define MATRIX_G_ROWS 4
 #define MATRIX_G_COLS 7

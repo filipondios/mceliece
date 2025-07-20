@@ -57,11 +57,19 @@ void generate_p(uint8_t p[MATRIX_P_DIM]) {
 }
 
 void keygen(PublicKey* publickey, PrivateKey* secretkey) {
-    const uint8_t g[MATRIX_G_ROWS] = { 0x70, 0x4c, 0x2a, 0x69 };
+    // Transpose of the parity matrix of the (3,2) Hamming code
+    // (H) and the generator matrix of the (7,4,3)-code (G)
+    const uint8_t h[MATRIX_H_ROWS] = { 0x20, 0x40, 0x60, 0x80, 0xa0, 0xc0, 0xe0 };
+    const uint8_t g[MATRIX_G_ROWS] = { 0xe0, 0x98, 0x54, 0xd2 };
+
+    // H is not 'part' of the private key (S,G,P) but is an
+    // essential part for the decryption process.
     generate_s(secretkey->s);
     generate_p(secretkey->p);
     memcpy(secretkey->g, g, MATRIX_G_ROWS);
+    memcpy(secretkey->h, h, MATRIX_H_ROWS);
 
+    // Generate the public key S*G*P
     uint8_t sg[MATRIX_SG_ROWS];
     mult_matrices(secretkey->s, MATRIX_S_DIM, MATRIX_S_DIM, secretkey->g, MATRIX_G_COLS, sg);
     mult_matrices(sg, MATRIX_SG_ROWS, MATRIX_SG_COLS, secretkey->p, MATRIX_P_DIM, publickey->sgp);
