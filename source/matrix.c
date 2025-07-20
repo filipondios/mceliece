@@ -1,10 +1,16 @@
+#include <stdint.h>
 #include <string.h>
 #include "matrix.h"
 #include "bits.h"
 
-
 bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
     memcpy(b, m, MATRIX_S_DIM);
+
+    for (uint8_t row = 0; row < MATRIX_S_DIM; ++row) {
+        const uint8_t hi = b[row] & 0xf0;
+        const uint8_t lo = (uint8_t) (0x8 >> row);
+        b[row] = hi | lo;
+    }
 
     for (int col = 0; col < MATRIX_S_DIM; ++col) {
         int pivot = -1;
@@ -33,7 +39,6 @@ bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
     return true;
 }
 
-
 void mult_matrices(const uint8_t* a, const int a_rows, const int a_cols,
     const uint8_t* b, const int b_cols, uint8_t* c) {
 
@@ -46,9 +51,11 @@ void mult_matrices(const uint8_t* a, const int a_rows, const int a_cols,
             for (int k = 0; k < a_cols; ++k) {
                 const uint8_t bit_a = GET(a, i, k);
                 const uint8_t bit_b = GET(b, k, j);
-                acc ^= (bit_a & bit_b);
+                acc ^= (bit_a && bit_b);
             }
-            row |= (acc << j);
+
+            if (acc)
+                row |= MSB >> j;
         }
         c[i] = row;
     }
