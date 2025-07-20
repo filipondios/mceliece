@@ -22,7 +22,8 @@ combination. Please note that this code is for demonstration purposes only and n
 
 First of all, after cloning this project's repository, you need to initialize the git submodules, which in
 this case are the dependencies [check 0.15.2](https://github.com/libcheck/check/tree/455005dc29dc6727de7ee36fee4b49a13b39f73f)
-and [libsodium 1.0.20](https://github.com/jedisct1/libsodium/tree/9511c982fb1d046470a8b42aa36556cdb7da15de).
+(for tests) and [libsodium 1.0.20](https://github.com/jedisct1/libsodium/tree/9511c982fb1d046470a8b42aa36556cdb7da15de)
+(for RNG).
 
 ```bash
 git clone https://github.com/filipondios/mceliece
