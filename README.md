@@ -15,14 +15,15 @@ combination. Please note that this code is for demonstration purposes only and n
 > [!NOTE]
 > In this version, the cryptosystem matrices are stored as arrays of 8-bit words, each representing
 > a row of up to 8 bits. Since matrices `S=(4×4)`, `P=(7×7)`, and `G=(4×7)` don’t use all 8 bits,
-> only the least significant bits are used, with the LSB as the first position. The previous version
+> only the most significant bits are used, with the MSB as the first position. The previous version
 > stored each bit separately, wasting space and reducing access efficiency.
 
 ## Building with CMake
 
 First of all, after cloning this project's repository, you need to initialize the git submodules, which in
 this case are the dependencies [check 0.15.2](https://github.com/libcheck/check/tree/455005dc29dc6727de7ee36fee4b49a13b39f73f)
-and [libsodium 1.0.20](https://github.com/jedisct1/libsodium/tree/9511c982fb1d046470a8b42aa36556cdb7da15de).
+(for tests) and [libsodium 1.0.20](https://github.com/jedisct1/libsodium/tree/9511c982fb1d046470a8b42aa36556cdb7da15de)
+(for RNG).
 
 ```bash
 git clone https://github.com/filipondios/mceliece
