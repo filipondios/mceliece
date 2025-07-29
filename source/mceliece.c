@@ -1,6 +1,8 @@
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <sodium/randombytes.h>
 #include "mceliece.h"
 #include "matrix.h"
@@ -20,7 +22,7 @@ void generate_s(uint8_t s[MATRIX_S_DIM]) {
     // Clean up unused bits in the S matrix
     // Rows are stored at the 4 MSBs of s[i]
     for (int i = 0; i < MATRIX_S_DIM; ++i) {
-        s[i] &= 0xf0;
+        s[i] &= MSB4_BLOCK;
     }
 }
 
@@ -73,4 +75,56 @@ void keygen(PublicKey* publickey, PrivateKey* secretkey) {
     uint8_t sg[MATRIX_SG_ROWS];
     mult_matrices(secretkey->s, MATRIX_S_DIM, MATRIX_S_DIM, secretkey->g, MATRIX_G_COLS, sg);
     mult_matrices(sg, MATRIX_SG_ROWS, MATRIX_SG_COLS, secretkey->p, MATRIX_P_DIM, publickey->sgp);
+}
+
+uint8_t encode(const uint8_t block, const uint8_t sgp[MATRIX_SGP_ROWS]) {
+    // Given 4 bits of information stored in the 4 MSBs of a 8-bit word,
+    // encoding the message means m*G + e, being 'e' a error vector, 'm'
+    // the message and G = S*G*P. The encoded message has 7 bits.
+    
+    uint8_t m_sgp;
+    mult_matrices(&block, 0x1, DECODED_LEN, sgp, MATRIX_SGP_COLS, &m_sgp);
+    const uint8_t rand = randombytes_random() % ENCODED_LEN;
+    return m_sgp ^ (MSB >> rand);
+}
+
+uint8_t decode(const uint8_t block, const uint8_t s_inv[MATRIX_S_DIM],
+               const uint8_t p[MATRIX_P_DIM], const uint8_t h[MATRIX_H_ROWS],
+               const uint8_t g[MATRIX_G_ROWS]) {
+    return 0;
+}
+
+int encrypt(const PublicKey* public_key, const uint8_t* in,
+            const size_t in_len, uint8_t** out, size_t* out_len) {
+    // Encrypt is encoding the 4 MSBs and 4 LSBs of each 8-bit block
+    // in a buffer. This produces another buffer, each containing a
+    // 7-bit block of encoded information. 
+
+    uint8_t* buffer;
+
+    if (!(buffer = malloc(in_len << 0x1))) {
+        return EXIT_FAILURE;
+    }
+
+    for (int i = 0; i < in_len; ++i) {
+        const uint8_t block = in[i];
+        uint8_t msbs = MSB4_BLOCK & block;
+        uint8_t lsbs = (LSB4_BLOCK & block) << LSB4_SHIFT;
+
+        msbs = encode(msbs, public_key->sgp);
+        lsbs = encode(lsbs, public_key->sgp);
+        
+        const uint8_t index = i << 0x2;
+        buffer[index] = msbs;
+        buffer[index + 0x1] = lsbs; 
+    }
+
+    *out_len = in_len << 0x1;
+    *out = buffer;
+    return EXIT_SUCCESS;
+}
+
+int decrypt(const PrivateKey* private_key, const uint8_t* cipher,
+            const size_t cipher_len, uint8_t** out, size_t* out_len) {
+    return 0;
 }
