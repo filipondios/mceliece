@@ -100,26 +100,31 @@ int encrypt(const PublicKey* public_key, const uint8_t* in,
     // in a buffer. This produces another buffer, each containing a
     // 7-bit block of encoded information. 
 
+    const size_t len = in_len << 0x1;
     uint8_t* buffer;
 
-    if (!(buffer = malloc(in_len << 0x1))) {
+    if (!(buffer = malloc(len))) {
         return EXIT_FAILURE;
     }
 
-    for (int i = 0; i < in_len; ++i) {
+    for (size_t i = 0; i < in_len; ++i) {
+        // Divide a block into MSBs and LSBs
         const uint8_t block = in[i];
-        uint8_t msbs = MSB4_BLOCK & block;
-        uint8_t lsbs = (LSB4_BLOCK & block) << LSB4_SHIFT;
+        uint8_t msbs = GET_MSB4_BLOCK(block);
+        uint8_t lsbs = GET_LSB4_BLOCK(block);
+        lsbs <<= LSB4_SHIFT;
 
+        // Encode both parts of the block
         msbs = encode(msbs, public_key->sgp);
         lsbs = encode(lsbs, public_key->sgp);
-        
-        const uint8_t index = i << 0x2;
+
+        // Store the encoded blocks
+        const size_t index = i << 0x1;
         buffer[index] = msbs;
         buffer[index + 0x1] = lsbs; 
     }
 
-    *out_len = in_len << 0x1;
+    *out_len = len;
     *out = buffer;
     return EXIT_SUCCESS;
 }

@@ -12,6 +12,7 @@
 #define ENCODED_LEN 0x7
 #define DECODED_LEN 0x4
 
-#define GET(m, i, j)   ((m[i]) &   (MSB >> j))
-#define SET(m, i, j)   ((m[i]) |=  (MSB >> j))
-#define UNSET(m, i, j) ((m[i]) &= ~(MSB >> j))
+#define GET(m, i, j)      ((m[i]) &   (MSB >> j))
+#define SET(m, i, j)      ((m[i]) |=  (MSB >> j))
+#define GET_MSB4_BLOCK(b) (b & MSB4_BLOCK)
+#define GET_LSB4_BLOCK(b) (b & LSB4_BLOCK)
