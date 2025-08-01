@@ -36,6 +36,12 @@ bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
                 b[row] ^= b[col];
         }
     }
+
+    for (int i = 0; i < MATRIX_S_DIM; ++i) {
+        uint8_t row = GET_LSB4_BLOCK(b[i]);
+        row <<= LSB4_SHIFT; 
+        b[i] = row;
+    }
     return true;
 }
 

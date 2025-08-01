@@ -81,7 +81,7 @@ START_TEST(test_gauss_invert_identity) {
     // The gauss function stores the rows of
     // the inverse 4x4 matrix at the lowest
     // 4 bits of each position of the result.
-    uint8_t result[MATRIX_S_DIM];
+    uint8_t out[MATRIX_S_DIM];
     
     // Identity matrix no.1 (4x4)
     uint8_t m1[MATRIX_S_DIM] = {
@@ -92,18 +92,14 @@ START_TEST(test_gauss_invert_identity) {
     };
     
     uint8_t expected1[MATRIX_S_DIM] = {
-        0b0001,
-        0b0010,
-        0b0100,
-        0b1000,
+        0b00010000,
+        0b00100000,
+        0b01000000,
+        0b10000000,
     };
 
-    gauss(m1, result);
-
-    for (int i = 0; i < MATRIX_S_DIM; ++i) {
-        const uint8_t row = result[i] & 0x0f;
-        ck_assert(expected1[i] == row);
-    }
+    gauss(m1, out);
+    ck_assert(!memcmp(expected1, out, MATRIX_S_DIM));
    
     // Identity matrix no.2 (4x4)
     uint8_t m2[MATRIX_S_DIM] = {
@@ -114,18 +110,14 @@ START_TEST(test_gauss_invert_identity) {
     };
 
     uint8_t expected2[MATRIX_S_DIM] = {
-        0b1000,
-        0b0100,
-        0b0010,
-        0b0001,
+        0b10000000,
+        0b01000000,
+        0b00100000,
+        0b00010000,
     };
 
-    gauss(m2, result);
-
-    for (int i = 0; i < MATRIX_S_DIM; ++i) {
-        const uint8_t row = result[i] & 0x0f;
-        ck_assert(expected2[i] == row);
-    } 
+    gauss(m2, out);
+    ck_assert(!memcmp(expected2, out, MATRIX_S_DIM));
 } END_TEST
 
 
@@ -143,18 +135,14 @@ START_TEST(test_gauss_invert_normal) {
     };
   
     uint8_t expected1[MATRIX_S_DIM] = {
-        0b1011,
-        0b0110,
-        0b1001,
-        0b1010,
+        0b10110000,
+        0b01100000,
+        0b10010000,
+        0b10100000,
     };
 
-    gauss(m1, out);
-
-    for (int i = 0; i < MATRIX_S_DIM; ++i) {
-        const uint8_t row = out[i] & 0x0f;
-        ck_assert(expected1[i] == row);
-    }
+    gauss(m1, out);    
+    ck_assert(!memcmp(expected1, out, MATRIX_S_DIM));
    
     uint8_t m2[MATRIX_S_DIM] = {
         0b10110000,
@@ -164,18 +152,14 @@ START_TEST(test_gauss_invert_normal) {
     };
   
     uint8_t expected2[MATRIX_S_DIM] = {
-        0b0001,
-        0b0011,
-        0b1101,
-        0b0100,
+        0b00010000,
+        0b00110000,
+        0b11010000,
+        0b01000000,
     };
 
     gauss(m2, out);
-
-    for (int i = 0; i < MATRIX_S_DIM; ++i) {
-        const uint8_t row = out[i] & 0x0f;
-        ck_assert(expected2[i] == row);
-    }
+    ck_assert(!memcmp(expected2, out, MATRIX_S_DIM));
 } END_TEST
 
 
@@ -327,7 +311,10 @@ START_TEST(test_normal_mult) {
 } END_TEST
 
 
+START_TEST(test_vector_and_matrix_mult) {
 
+    
+} END_TEST
 
 int main(void) {
     Suite* suite = suite_create("matrix");
@@ -343,6 +330,7 @@ int main(void) {
     tcase_add_test(tc_mult, test_inverse_mult);    
     tcase_add_test(tc_mult, test_identity_mult);
     tcase_add_test(tc_mult, test_normal_mult);
+    tcase_add_test(tc_mult, test_vector_and_matrix_mult);
     suite_add_tcase(suite, tc_mult);
 
     SRunner* sr = srunner_create(suite);
