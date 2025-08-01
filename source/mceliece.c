@@ -1,4 +1,3 @@
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -71,6 +70,9 @@ void keygen(PublicKey* publickey, PrivateKey* secretkey) {
     memcpy(secretkey->g, g, MATRIX_G_ROWS);
     memcpy(secretkey->h, h, MATRIX_H_ROWS);
 
+    // Calculate the inverse of S
+    gauss(secretkey->s, secretkey->si);
+
     // Generate the public key S*G*P
     uint8_t sg[MATRIX_SG_ROWS];
     mult_matrices(secretkey->s, MATRIX_S_DIM, MATRIX_S_DIM, secretkey->g, MATRIX_G_COLS, sg);
@@ -107,7 +109,7 @@ int encrypt(const PublicKey* public_key, const uint8_t* in,
         return EXIT_FAILURE;
     }
 
-    for (size_t i = 0; i < in_len; ++i) {
+    for (size_t i = 0x0; i < in_len; ++i) {
         // Divide a block into MSBs and LSBs
         const uint8_t block = in[i];
         uint8_t msbs = GET_MSB4_BLOCK(block);
@@ -129,7 +131,35 @@ int encrypt(const PublicKey* public_key, const uint8_t* in,
     return EXIT_SUCCESS;
 }
 
-int decrypt(const PrivateKey* private_key, const uint8_t* cipher,
-            const size_t cipher_len, uint8_t** out, size_t* out_len) {
-    return 0;
+int decrypt(const PrivateKey* private_key, const uint8_t* in,
+            const size_t in_len, uint8_t** out, size_t* out_len) {
+    // Decrypt is decoding the 7 MSBs of two consecutive 8-bit blocks
+    // in a buffer. This produces two 4-bit blocks (the 4 MSBs and 4
+    // LSBs of a initial 8-bit block of plaintext information. 
+
+    const size_t len = in_len << 0x1;
+    uint8_t* buffer;
+
+    if (!(buffer = malloc(len))) {
+        return EXIT_FAILURE;
+    }
+
+    for (size_t i = 0x0; i < in_len; i += 0x2) {
+        uint8_t msbs = GET_MSB7_BLOCK(in[i]);
+        uint8_t lsbs = GET_MSB7_BLOCK(in[i + 0x1]);
+
+        // Decode both parts of the ciphertext block
+        msbs = decode(msbs, private_key->si, private_key->p, private_key->h, private_key->g);
+        lsbs = decode(lsbs, private_key->si, private_key->p, private_key->h, private_key->g);
+        msbs = GET_MSB4_BLOCK(msbs);       
+        lsbs = GET_MSB4_BLOCK(lsbs) >> LSB4_SHIFT;
+         
+        // Store the decoded blocks
+        const size_t index = i >> 0x1;
+        buffer[index] = msbs | lsbs;
+    }
+
+    *out_len = len;
+    *out = buffer;
+    return EXIT_SUCCESS;
 }

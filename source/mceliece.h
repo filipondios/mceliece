@@ -4,13 +4,20 @@
 #include "matrix.h"
 
 typedef struct {
+    /** Matrix 'S' (4x4) **/
     uint8_t s[MATRIX_S_DIM];
+    /** Matrix 'S' inverse **/
+    uint8_t si[MATRIX_S_DIM];
+    /** Matrix 'P' (7x7) **/
     uint8_t p[MATRIX_P_DIM];
+    /** Matrix 'G' (4x7) **/
     uint8_t g[MATRIX_G_ROWS];
+    /** Matrix 'H' (3x7) **/
     uint8_t h[MATRIX_H_ROWS];
 } PrivateKey;
 
 typedef struct {
+    /** Matrix S*G*P (4x7) **/
     uint8_t sgp[MATRIX_SGP_ROWS];
 } PublicKey;
 
