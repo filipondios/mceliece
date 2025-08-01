@@ -6,13 +6,13 @@
 bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
     memcpy(b, m, MATRIX_S_DIM);
 
-    for (uint8_t row = 0; row < MATRIX_S_DIM; ++row) {
-        const uint8_t hi = b[row] & 0xf0;
-        const uint8_t lo = (uint8_t) (0x8 >> row);
+    for (uint8_t row = 0x0; row < MATRIX_S_DIM; ++row) {
+        const uint8_t hi = GET_MSB4_BLOCK(b[row]);
+        const uint8_t lo = (uint8_t) (MSB >> (row + LSB4_SHIFT));
         b[row] = hi | lo;
     }
 
-    for (int col = 0; col < MATRIX_S_DIM; ++col) {
+    for (int col = 0x0; col < MATRIX_S_DIM; ++col) {
         int pivot = -1;
 
         for (int row = col; row < MATRIX_S_DIM; ++row) {
@@ -31,7 +31,7 @@ bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
             b[pivot] = tmp;
         }
 
-        for (int row = 0; row < MATRIX_S_DIM; ++row) {
+        for (int row = 0x0; row < MATRIX_S_DIM; ++row) {
             if (row != col && GET(b, row, col))
                 b[row] ^= b[col];
         }
