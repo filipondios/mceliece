@@ -311,9 +311,20 @@ START_TEST(test_normal_mult) {
 } END_TEST
 
 
-START_TEST(test_vector_and_matrix_mult) {
+START_TEST(test_vector_and_matrix_mult) { 
+    uint8_t block = 0b11000000;
+    uint8_t sgp[MATRIX_SGP_ROWS] = {
+        0b11111110,
+        0b10110000,
+        0b00011100,
+        0b11001000,
+    };
 
-    
+    uint8_t expected = 0b01001110;
+    uint8_t result;
+
+    mult_matrices(&block, 1, 4, sgp, MATRIX_SGP_COLS, &result);    
+    ck_assert(result == expected);
 } END_TEST
 
 int main(void) {
