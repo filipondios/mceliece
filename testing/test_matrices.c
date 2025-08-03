@@ -327,7 +327,7 @@ START_TEST(test_vector_and_matrix_mult) {
     ck_assert(result == expected);
 } END_TEST
 
-int main(void) {
+int test_matrices(void) {
     Suite* suite = suite_create("matrix");
   
     TCase* tc_gauss = tcase_create("gauss");
