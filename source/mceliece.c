@@ -27,33 +27,42 @@ void generate_s(uint8_t s[MATRIX_S_DIM]) {
 
 void generate_p(uint8_t p[MATRIX_P_DIM]) {
     uint8_t indices[MATRIX_P_DIM];
-    const uint8_t fixed = (randombytes_random() % MATRIX_P_DIM);
     memset(p, 0x0, MATRIX_P_DIM);
 
-    for (uint8_t i = 0x0; i < MATRIX_P_DIM; ++i) {
-        // indices[row] = active column bit. Here indices
-        // is being initialized as the identity matrix.
-        indices[i] = i;
+    // select one fixed column randomly
+    uint8_t fixed = (uint8_t) randombytes_random();
+    fixed %= MATRIX_P_DIM;
+
+    // initialize indices array
+    for (uint8_t i = 0x0, k = 0x0; i < MATRIX_P_DIM; ++i) {
+        if (i != fixed) {
+            indices[k++] = i;
+        }
     }
 
-    // Fisher-Yates shuffle, except for one position
-    for (uint8_t i = MATRIX_P_DIM - 0x1; i > 0x0; --i) {
-        if (i == fixed) { continue; }
-        uint8_t j;
-
-        do {
-            randombytes_buf((void*) &j, sizeof(uint8_t));
-            j %= (i + 1);
-        } while (j == fixed);
+    // shuffle indices array
+    for (uint8_t i = MATRIX_P_DIM - 2; i > 0; --i) {
+        uint8_t j = (uint8_t) randombytes_random();
+        j %= (i + 1);
 
         const uint8_t tmp = indices[i];
         indices[i] = indices[j];
         indices[j] = tmp;
     }
 
-    // Build the shuffled identity matrix
+    // Build involutive mapping
+    uint8_t map[MATRIX_P_DIM];
+    map[fixed] = fixed;
+
+    for (uint8_t i = 0; i < MATRIX_P_DIM - 1; i += 2) {
+        uint8_t a = indices[i];
+        uint8_t b = indices[i + 1];
+        map[a] = b;
+        map[b] = a;
+    }
+
     for (uint8_t i = 0; i < MATRIX_P_DIM; ++i) {
-        SET(p, i, indices[i]);
+        SET(p, i, map[i]);
     }
 }
 
@@ -91,8 +100,7 @@ uint8_t encode(const uint8_t block, const uint8_t sgp[MATRIX_SGP_ROWS]) {
 }
 
 uint8_t decode(const uint8_t block, const uint8_t s_inv[MATRIX_S_DIM],
-               const uint8_t p[MATRIX_P_DIM], const uint8_t h[MATRIX_H_ROWS],
-               const uint8_t g[MATRIX_G_ROWS]) {
+               const uint8_t p[MATRIX_P_DIM], const uint8_t h[MATRIX_H_ROWS]) {
     // Given 7 bits of information stored in the MSBs of a 8-bit word,
     // decoding the message means obtaining m1 = block*P, then  m1 * H tells
     // where the error 'e' is introduced and its corrected, producing m2.
@@ -123,17 +131,17 @@ uint8_t decode(const uint8_t block, const uint8_t s_inv[MATRIX_S_DIM],
     return decoded;
 }
 
-int encrypt(const PublicKey* public_key, const uint8_t* in,
+bool encrypt(const PublicKey* public_key, const uint8_t* in,
             const size_t in_len, uint8_t** out, size_t* out_len) {
     // Encrypt is encoding the 4 MSBs and 4 LSBs of each 8-bit block
     // in a buffer. This produces another buffer, each containing a
     // 7-bit block of encoded information. 
 
-    const size_t len = in_len << 0x1;
+    const size_t len = in_len * 2;
     uint8_t* buffer;
 
     if (!(buffer = malloc(len))) {
-        return EXIT_FAILURE;
+        return false;
     }
 
     for (size_t i = 0x0; i < in_len; ++i) {
@@ -155,20 +163,20 @@ int encrypt(const PublicKey* public_key, const uint8_t* in,
 
     *out_len = len;
     *out = buffer;
-    return EXIT_SUCCESS;
+    return true;
 }
 
-int decrypt(const PrivateKey* private_key, const uint8_t* in,
+bool decrypt(const PrivateKey* private_key, const uint8_t* in,
             const size_t in_len, uint8_t** out, size_t* out_len) {
     // Decrypt is decoding the 7 MSBs of two consecutive 8-bit blocks
     // in a buffer. This produces two 4-bit blocks (the 4 MSBs and 4
     // LSBs of a initial 8-bit block of plaintext information. 
 
-    const size_t len = in_len << 0x1;
+    const size_t len = in_len / 2;
     uint8_t* buffer;
 
     if (!(buffer = malloc(len))) {
-        return EXIT_FAILURE;
+        return false;
     }
 
     for (size_t i = 0x0; i < in_len; i += 0x2) {
@@ -176,8 +184,8 @@ int decrypt(const PrivateKey* private_key, const uint8_t* in,
         uint8_t lsbs = GET_MSB7_BLOCK(in[i + 0x1]);
 
         // Decode both parts of the ciphertext block
-        msbs = decode(msbs, private_key->si, private_key->p, private_key->ht, private_key->g);
-        lsbs = decode(lsbs, private_key->si, private_key->p, private_key->ht, private_key->g);
+        msbs = decode(msbs, private_key->si, private_key->p, private_key->ht);
+        lsbs = decode(lsbs, private_key->si, private_key->p, private_key->ht);
         msbs = GET_MSB4_BLOCK(msbs);       
         lsbs = GET_MSB4_BLOCK(lsbs) >> LSB4_SHIFT;
          
@@ -188,5 +196,5 @@ int decrypt(const PrivateKey* private_key, const uint8_t* in,
 
     *out_len = len;
     *out = buffer;
-    return EXIT_SUCCESS;
+    return true;
 }
