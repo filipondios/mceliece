@@ -68,7 +68,7 @@ void keygen(PublicKey* publickey, PrivateKey* secretkey) {
     generate_s(secretkey->s);
     generate_p(secretkey->p);
     memcpy(secretkey->g, g, MATRIX_G_ROWS);
-    memcpy(secretkey->h, h, MATRIX_H_ROWS);
+    memcpy(secretkey->ht, h, MATRIX_H_ROWS);
 
     // Calculate the inverse of S
     gauss(secretkey->s, secretkey->si);
@@ -93,7 +93,34 @@ uint8_t encode(const uint8_t block, const uint8_t sgp[MATRIX_SGP_ROWS]) {
 uint8_t decode(const uint8_t block, const uint8_t s_inv[MATRIX_S_DIM],
                const uint8_t p[MATRIX_P_DIM], const uint8_t h[MATRIX_H_ROWS],
                const uint8_t g[MATRIX_G_ROWS]) {
-    return 0;
+    // Given 7 bits of information stored in the MSBs of a 8-bit word,
+    // decoding the message means obtaining m1 = block*P, then  m1 * H tells
+    // where the error 'e' is introduced and its corrected, producing m2.
+    // Then, its obtained a 'v' such v*G = m2. Finally, the decoded word
+    // is the result of x*S_inv.  
+
+    uint8_t m1, e, m2, x, decoded;
+    mult_matrices(&block, 0x1, ENCODED_LEN, p, MATRIX_P_DIM, &m1); 
+    mult_matrices(&m1, 0x1, ENCODED_LEN, h, MATRIX_H_COLS, &e);    
+    m2 = m1 ^ (MSB >> (e >> ERROR_SHIFT)); // correct error
+
+    // Given an encoded 7-bit vector m2 = {R1, R2, R3, R4, R5, R6, R7}
+    // by multiplying a 4-bit input v{x, y, z, t} with the 4x7 generator
+    // matrix 'G' defined at the 'keygen' function:
+    //
+    // The original message bits can be directly recovered from m2:
+    // (x = R3, y = R5, z = R6, t = R7)
+    // 
+    // This works because the generator matrix is in systematic form:
+    // the last 4 positions in R store the original input bits directly.
+
+    x = 0x0 | (GET_BIT(m2, 0x2) >> 0x2);
+    x |= GET_BIT(m2, 0x4) >> 0x2;
+    x |= GET_BIT(m2, 0x5) >> 0x2;
+    x |= GET_BIT(m2, 0x6) >> 0x2;
+
+    mult_matrices(&x, 0x1, DECODED_LEN, s_inv, MATRIX_S_DIM, &decoded);
+    return decoded;
 }
 
 int encrypt(const PublicKey* public_key, const uint8_t* in,
@@ -149,8 +176,8 @@ int decrypt(const PrivateKey* private_key, const uint8_t* in,
         uint8_t lsbs = GET_MSB7_BLOCK(in[i + 0x1]);
 
         // Decode both parts of the ciphertext block
-        msbs = decode(msbs, private_key->si, private_key->p, private_key->h, private_key->g);
-        lsbs = decode(lsbs, private_key->si, private_key->p, private_key->h, private_key->g);
+        msbs = decode(msbs, private_key->si, private_key->p, private_key->ht, private_key->g);
+        lsbs = decode(lsbs, private_key->si, private_key->p, private_key->ht, private_key->g);
         msbs = GET_MSB4_BLOCK(msbs);       
         lsbs = GET_MSB4_BLOCK(lsbs) >> LSB4_SHIFT;
          

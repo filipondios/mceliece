@@ -12,8 +12,8 @@ typedef struct {
     uint8_t p[MATRIX_P_DIM];
     /** Matrix 'G' (4x7) **/
     uint8_t g[MATRIX_G_ROWS];
-    /** Matrix 'H' (3x7) **/
-    uint8_t h[MATRIX_H_ROWS];
+    /** Matrix 'H' traspose (7x3) **/
+    uint8_t ht[MATRIX_H_ROWS];
 } PrivateKey;
 
 typedef struct {
