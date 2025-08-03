@@ -14,6 +14,7 @@
 
 #define ENCODED_LEN 0x7
 #define DECODED_LEN 0x4
+#define ERROR_SHIFT 0x5
 
 #define GET(m, i, j)      ((m[i]) &   (MSB >> j))
 #define SET(m, i, j)      ((m[i]) |=  (MSB >> j))
