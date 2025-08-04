@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -112,21 +113,22 @@ uint8_t decode(const uint8_t block, const uint8_t s_inv[MATRIX_S_DIM],
     mult_matrices(&m1, 0x1, ENCODED_LEN, h, MATRIX_H_COLS, &e);    
     m2 = m1 ^ (MSB >> (e >> ERROR_SHIFT)); // correct error
 
-    // Given an encoded 7-bit vector m2 = {R1, R2, R3, R4, R5, R6, R7}
+    // Given an encoded 7-bit vector m2 = {R0, R1, R2, R3, R4, R5, R6}
     // by multiplying a 4-bit input v{x, y, z, t} with the 4x7 generator
     // matrix 'G' defined at the 'keygen' function:
     //
     // The original message bits can be directly recovered from m2:
-    // (x = R3, y = R5, z = R6, t = R7)
+    // (x = R2, y = R4, z = R5, t = R6)
     // 
     // This works because the generator matrix is in systematic form:
     // the last 4 positions in R store the original input bits directly.
 
-    x = 0x0 | (GET_BIT(m2, 0x2) >> 0x2);
-    x |= GET_BIT(m2, 0x4) >> 0x2;
-    x |= GET_BIT(m2, 0x5) >> 0x2;
-    x |= GET_BIT(m2, 0x6) >> 0x2;
-
+    x = 0x0;
+    x |= (GET_BIT(m2, 0x2) ? 0x80 : 0x00);
+    x |= (GET_BIT(m2, 0x4) ? 0x40 : 0x00);  
+    x |= (GET_BIT(m2, 0x5) ? 0x20 : 0x00);
+    x |= (GET_BIT(m2, 0x6) ? 0x10 : 0x00);
+    
     mult_matrices(&x, 0x1, DECODED_LEN, s_inv, MATRIX_S_DIM, &decoded);
     return decoded;
 }
@@ -156,7 +158,7 @@ bool encrypt(const PublicKey* public_key, const uint8_t* in,
         lsbs = encode(lsbs, public_key->sgp);
 
         // Store the encoded blocks
-        const size_t index = i << 0x1;
+        const size_t index = i * 2;
         buffer[index] = msbs;
         buffer[index + 0x1] = lsbs; 
     }
@@ -175,7 +177,7 @@ bool decrypt(const PrivateKey* private_key, const uint8_t* in,
     const size_t len = in_len / 2;
     uint8_t* buffer;
 
-    if (!(buffer = malloc(len))) {
+    if ((in_len % 2) || !(buffer = malloc(len))) {
         return false;
     }
 
@@ -185,13 +187,15 @@ bool decrypt(const PrivateKey* private_key, const uint8_t* in,
 
         // Decode both parts of the ciphertext block
         msbs = decode(msbs, private_key->si, private_key->p, private_key->ht);
-        lsbs = decode(lsbs, private_key->si, private_key->p, private_key->ht);
-        msbs = GET_MSB4_BLOCK(msbs);       
-        lsbs = GET_MSB4_BLOCK(lsbs) >> LSB4_SHIFT;
+        lsbs = decode(lsbs, private_key->si, private_key->p, private_key->ht);     
+
+        uint8_t msb_part = GET_MSB4_BLOCK(msbs);
+        uint8_t lsb_part = GET_MSB4_BLOCK(lsbs);
+        lsb_part >>= LSB4_SHIFT;
          
-        // Store the decoded blocks
-        const size_t index = i >> 0x1;
-        buffer[index] = msbs | lsbs;
+        const size_t index = i / 2;
+        buffer[index] = msb_part | lsb_part;        
+        printf("%d ", buffer[index]);
     }
 
     *out_len = len;
