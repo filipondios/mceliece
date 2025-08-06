@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include "matrix.h"
 #include "bits.h"
@@ -45,16 +46,16 @@ bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
     return true;
 }
 
-void mult_matrices(const uint8_t* a, const int a_rows, const int a_cols,
-    const uint8_t* b, const int b_cols, uint8_t* c) {
+void mult_matrices(const uint8_t* a, const size_t a_rows, const size_t a_cols,
+    const uint8_t* b, const size_t b_cols, uint8_t* c) {
 
-    for (int i = 0; i < a_rows; ++i) {
+    for (size_t i = 0; i < a_rows; ++i) {
         uint8_t row = 0x0;
 
-        for (int j = 0; j < b_cols; ++j) {
+        for (size_t j = 0; j < b_cols; ++j) {
             uint8_t acc = 0x0;
             
-            for (int k = 0; k < a_cols; ++k) {
+            for (size_t k = 0; k < a_cols; ++k) {
                 const uint8_t bit_a = GET(a, i, k);
                 const uint8_t bit_b = GET(b, k, j);
                 acc ^= (bit_a && bit_b);
@@ -65,4 +66,24 @@ void mult_matrices(const uint8_t* a, const int a_rows, const int a_cols,
         }
         c[i] = row;
     }
+}
+
+void print_matrix(const uint8_t* matrix, const size_t rows, const size_t cols) {
+    printf("{");
+
+    for (size_t row = 0; row < rows; ++row) {
+        const uint8_t row_vals = matrix[row];
+        
+        for (size_t col = 0; col < cols; ++col) {
+            const uint8_t bit = GET_BIT(row_vals, col);
+            const char num = bit? '1' : '0';
+            char sep;
+
+            if (row == rows - 1) { sep = (col == cols - 1)? ' ' : ','; }
+            else { sep = (col == cols - 1)? ';' : ','; }
+
+            printf("%c%c", num, sep);
+        }
+    }    
+    printf("}");
 }
