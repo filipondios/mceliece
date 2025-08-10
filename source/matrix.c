@@ -68,8 +68,8 @@ void mult_matrices(const uint8_t* a, const size_t a_rows, const size_t a_cols,
     }
 }
 
-void print_matrix(const uint8_t* matrix, const size_t rows, const size_t cols) {
-    printf("{");
+void print_matrix(const char* title, const uint8_t* matrix, const size_t rows, const size_t cols) {
+    printf("%s = {", title);
 
     for (size_t row = 0; row < rows; ++row) {
         const uint8_t row_vals = matrix[row];
