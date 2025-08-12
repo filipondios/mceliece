@@ -85,5 +85,5 @@ void print_matrix(const char* title, const uint8_t* matrix, const size_t rows, c
             printf("%c%c", num, sep);
         }
     }    
-    printf("}");
+    printf("}\n");
 }
