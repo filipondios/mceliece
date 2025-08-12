@@ -1,9 +1,9 @@
 #include <check.h>
-#include <pthread.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <sodium.h>
 #include "bits.h"
 #include "matrix.h"
 #include "mceliece.h"
@@ -32,7 +32,7 @@ START_TEST(test_p_generation) {
     } 
 } END_TEST
 
-START_TEST(test_encrypt_decrypt) {   
+START_TEST(test_encrypt_decrypt) {
     PrivateKey private_key;
     PublicKey public_key;
 
@@ -59,7 +59,7 @@ START_TEST(test_encrypt_decrypt) {
     
     printf("\n---- encryption results ----\n");
     print_matrix("text (1)", plaintext, sizeof(plaintext), 0x8);
-    print_matrix("cipher (2)", plaintext, cipher_len, 0x8);
+    print_matrix("cipher (2)", cipher, cipher_len, 0x8);
     print_matrix("text (3)", recovered, recovered_len, 0x8);
     
     // check cipher and recovered plaintext length (3)
@@ -69,8 +69,42 @@ START_TEST(test_encrypt_decrypt) {
     // the recovered plaintext must be the same as the
     // original plaintext, duhh (4)
     ck_assert(!memcmp(plaintext, recovered, plaintext_len));
+    free(cipher);
+    free(recovered);
 } END_TEST
 
+START_TEST(test_encrypt_decrypt_random) {
+
+    uint8_t *plaintext, *cipher, *recovered;
+    size_t cipher_len, recovered_len;
+    PublicKey* public_key;
+    PrivateKey* private_key;
+
+    const size_t plaintext_len = 2500;
+    const size_t iterations = 100;
+
+    for (int i = 0; i < iterations; ++i) {
+        public_key = malloc(sizeof(PublicKey));
+        private_key = malloc(sizeof(PrivateKey));
+        plaintext = malloc(plaintext_len);
+
+        randombytes(plaintext, plaintext_len);
+        keygen(public_key, private_key);
+        encrypt(public_key, plaintext, plaintext_len, &cipher, &cipher_len);
+        decrypt(private_key, cipher, cipher_len, &recovered, &recovered_len);
+
+        ck_assert(cipher_len == (plaintext_len * 2));
+        ck_assert(recovered_len == plaintext_len);
+        ck_assert(!memcmp(plaintext, recovered, plaintext_len));
+
+        free(public_key);
+        free(private_key);
+        free(plaintext);
+        free(cipher);
+        free(recovered);
+    }
+
+} END_TEST
 
 int test_mceliece(void) {
     Suite* suite = suite_create("mceliece");
@@ -79,6 +113,7 @@ int test_mceliece(void) {
     tcase_add_test(tc_encrypt, test_s_generation);
     tcase_add_test(tc_encrypt, test_p_generation);
     tcase_add_test(tc_encrypt, test_encrypt_decrypt);
+    tcase_add_test(tc_encrypt, test_encrypt_decrypt_random);
     suite_add_tcase(suite, tc_encrypt);
  
     SRunner* sr = srunner_create(suite);
