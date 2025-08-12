@@ -25,4 +25,5 @@ bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]);
 void mult_matrices(const uint8_t* a, const size_t a_rows, const size_t a_cols,
                    const uint8_t* b, const size_t b_cols, uint8_t* c);
 
-void print_matrix(const char* title, const uint8_t* matrix, const size_t rows, const size_t cols);
+void print_matrix(const char* title, const uint8_t* matrix, const size_t rows,
+                  const size_t cols);
