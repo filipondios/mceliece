@@ -70,22 +70,9 @@ void generate_p(uint8_t p[MATRIX_P_DIM]) {
 void keygen(PublicKey* publickey, PrivateKey* secretkey) {
     // Transpose of the parity matrix of the (3,2) Hamming code
     // (H) and the generator matrix of the (7,4,3)-code (G)
-    const uint8_t h[MATRIX_H_ROWS] = {
-        0b00100000,
-        0b01000000,
-        0b01100000,
-        0b10000000,
-        0b10100000,
-        0b11000000,
-        0b11100000,
-    };
 
-    const uint8_t g[MATRIX_G_ROWS] = {
-        0b11100000,
-        0b10011000,
-        0b01010100,
-        0b11010010,
-    };
+    const uint8_t h[MATRIX_H_ROWS] = { 0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0 };
+    const uint8_t g[MATRIX_G_ROWS] = { 0xE0, 0x98, 0x54, 0xD2 };
 
     // H is not 'part' of the private key (S,G,P) but is an
     // essential part for the decryption process.
@@ -127,7 +114,7 @@ uint8_t decode(const uint8_t block, const uint8_t s_inv[MATRIX_S_DIM],
     mult_matrices(&m1, 0x1, ENCODED_LEN, h, MATRIX_H_COLS, &e);
 
     syndrome = e >> ERROR_SHIFT;
-    m2 = (syndrome)? (m1 ^ (MSB >> (syndrome - 1))) : m1;
+    m2 = (syndrome)? (m1 ^ (MSB >> (syndrome - 0x1))) : m1;
 
     // Given an encoded 7-bit vector m2 = {R0, R1, R2, R3, R4, R5, R6}
     // by multiplying a 4-bit input v{x, y, z, t} with the 4x7 generator
