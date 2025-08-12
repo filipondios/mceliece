@@ -1,4 +1,5 @@
 #include <check.h>
+#include <pthread.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -35,20 +36,32 @@ START_TEST(test_encrypt_decrypt) {
     PrivateKey private_key;
     PublicKey public_key;
 
-    const uint8_t plaintext[] = {'h','e','l','l','o'}; 
-    const size_t plaintext_len = strlen((char*) plaintext);
+    const uint8_t plaintext[] = "filipondios"; 
+    const size_t plaintext_len = sizeof(plaintext);
     uint8_t *cipher = NULL, *recovered = NULL;
     size_t cipher_len, recovered_len;
 
     // generate keypair (1)
     keygen(&public_key, &private_key);
 
+    printf("---- test mceliece ----\n---- keygen ----\n");
+    print_matrix("s", private_key.s, MATRIX_S_DIM, MATRIX_S_DIM);
+    print_matrix("p", private_key.p, MATRIX_P_DIM, MATRIX_P_DIM);
+    print_matrix("g", private_key.g, MATRIX_G_ROWS, MATRIX_G_COLS);
+    print_matrix("ht", private_key.ht, MATRIX_H_ROWS, MATRIX_H_COLS);
+    print_matrix("sgp", public_key.sgp, MATRIX_SGP_ROWS, MATRIX_SGP_COLS);
+
     // generate cipher text and recover plain text. check allocations (2)
     ck_assert(encrypt(&public_key, plaintext, plaintext_len, &cipher, &cipher_len));
     ck_assert(decrypt(&private_key, cipher, cipher_len, &recovered, &recovered_len));
     ck_assert(cipher != NULL);
     ck_assert(recovered != NULL);
-
+    
+    printf("\n---- encryption results ----\n");
+    print_matrix("text (1)", plaintext, sizeof(plaintext), 0x8);
+    print_matrix("cipher (2)", plaintext, cipher_len, 0x8);
+    print_matrix("text (3)", recovered, recovered_len, 0x8);
+    
     // check cipher and recovered plaintext length (3)
     ck_assert(cipher_len == (plaintext_len * 2));
     ck_assert(recovered_len == plaintext_len);
@@ -57,6 +70,7 @@ START_TEST(test_encrypt_decrypt) {
     // original plaintext, duhh (4)
     ck_assert(!memcmp(plaintext, recovered, plaintext_len));
 } END_TEST
+
 
 int test_mceliece(void) {
     Suite* suite = suite_create("mceliece");
