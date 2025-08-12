@@ -1,12 +1,11 @@
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sodium/randombytes.h>
-#include "mceliece.h"
 #include "matrix.h"
 #include "bits.h"
+#include "mceliece.h"
 
 
 void generate_s(uint8_t s[MATRIX_S_DIM]) {
