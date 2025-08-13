@@ -1,8 +1,8 @@
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include "matrix.h"
 #include "bits.h"
+
 
 bool gauss(const uint8_t m[MATRIX_S_DIM], uint8_t b[MATRIX_S_DIM]) {
     memcpy(b, m, MATRIX_S_DIM);
