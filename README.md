@@ -3,7 +3,8 @@
 In this repository you will find the implementation of the
 [McEliece cryptosystem](https://en.wikipedia.org/wiki/McEliece_cryptosystem)
 using the common ``(7,4,3)`` [Hamming codes](https://en.wikipedia.org/wiki/Hamming_code)
-combination. Please note that this code is for demonstration purposes only and not for other use. 
+combination as a static library. Please note that this code is for demonstration purposes
+only and not for other use. 
 
 > [!NOTE]
 > This code is not recommended for use in document or text encryption of relevance,
@@ -63,8 +64,9 @@ cmake --preset $PRESET
 ln -s out/build/$PRESET/compile_commands.json compile_commands.json
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > After running build commands (either in Windows or Linux) with a preset `<preset>`, you should
-> find the application executable file at `out/build/<preset>/` and the tests executable file at
-> `out/build/<preset>/tests/`. The application binary must be named `mceliece` and the tests binary
+> find the application static library file at `out/build/<preset>/` and the tests executable file at
+> `out/build/<preset>/tests/`. The application binary must be named `libmceliece.a` (Linux) or `libmceliece.lib`
+> (Windows) and the tests binary
 > `mceliece_tests`.
