@@ -95,11 +95,11 @@ This change results in **faster access** and **more compact storage**, as shown 
 
 ### **Ciphertext Size**
 In the previous implementation, the encrypted text representation was highly inefficient, reaching a size of  
-`plaintext_length × 14`.  
-It is now simply `plaintext_length × 2`.
+`plaintext_length × 14`. It is now simply `plaintext_length × 2`.
 
 ### **Function Reuse**
-The same function is now used to compute the inverse of matrix `S` **and** to check if it is invertible via Gaussian elimination, instead of first calculating the determinant to verify invertibility.
+The same function is now used to compute the inverse of matrix `S` **and** to check if it is invertible via 
+Gaussian elimination, instead of first calculating the determinant to verify invertibility.
 
 ### **Other Improvements**
 - Cleaner, more readable, and thoroughly tested code.
