@@ -103,6 +103,7 @@ The same function is now used to compute the inverse of matrix `S` **and** to ch
 
 ### **Other Improvements**
 - Cleaner, more readable, and thoroughly tested code.
-- CMake is now used instead of Make, enabling cross-platform compilation and easier integration of external libraries.
+- CMake is now used instead of Make, enabling cross-platform compilation.
+- Integration of external libraries.
 - Clearer organization of source code and directories.
 
