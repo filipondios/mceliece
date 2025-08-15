@@ -71,7 +71,7 @@ ln -s out/build/$PRESET/compile_commands.json compile_commands.json
 > (Windows) and the tests binary
 > `mceliece_tests`.
 
-# Version Upgrades
+## Version Upgrades
 
 In this new release, following [v1.0.0](https://github.com/filipondios/mceliece/tree/1.0.0), a significant number 
 of improvements have been introduced, increasing both the efficiency and overall quality of the project. Among the
