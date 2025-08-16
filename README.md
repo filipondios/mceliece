@@ -15,9 +15,9 @@ only and not for other use.
 
 In this new version, the cryptosystem matrices are stored as arrays of 8-bit blocks, each representing
 a row of up to 8 bits. Since matrices `S=(4×4)`, `P=(7×7)`, and `G=(4×7)` don’t use all 8 bits,
-only the most significant bits are used, with the MSB as the first position. The 
-[previous version](https://github.com/filipondios/mceliece/tree/1.0.0) stored each bit separately, 
-wasting space and reducing access efficiency.
+only the most significant bits are used, with the [MSB](https://en.wikipedia.org/wiki/Bit_numbering#Most_significant_bit)
+as the first position. The [previous version v1.0.0](https://github.com/filipondios/mceliece/tree/1.0.0) 
+stored each bit separately, wasting space and reducing access efficiency.
 
 ## Building with CMake
 
