@@ -31,25 +31,18 @@ git clone https://github.com/filipondios/mceliece
 git submodule update --init --recursive
 ```
 
-### Windows (Visual Studio)
-
-You can open the project folder directly in **Visual Studio** on Windows without any modifications.
-Visual Studio automatically detects the `CMakePresets.json` file. It supports building and running
-in all configurations (x64, x86, Debug and Release).
-
-### Linux
-Similar to Windows, there are existing presets for compiling the project (you can see them in
-[CMakePresets.json](CMakePresets.json)). Once you choose a preset, you can compile the project.
-For example:
+The `CMakePresets.json` file supports building for `x64` and `x86` architectures, in any mode `debug` or `release` for 
+Linux and Windows. The compilation process is very simple: first you must choose one preset and the compile that preset.
+These are some examples:
 
 ```sh
-# Compile the project for x64 Release mode
+# Compile the project for x64 linux release mode
 cmake --preset x64-release-linux
 cmake --build --preset x64-release-linux
 
-# Compile the project for x86 Debug mode
-cmake --preset x86-debug-linux
-cmake --build --preset x86-debug-linux
+# Compile the project for x86 windows debug mode
+cmake --preset x86-debug-windows
+cmake --build --preset x86-debug-windows
 ```
 
 Once you run the command `cmake --preset <preset>`, the `out/build/<preset>/compile_commands.json`
