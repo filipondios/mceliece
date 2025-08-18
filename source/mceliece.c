@@ -58,7 +58,7 @@ void generate_p(uint8_t p[MATRIX_P_DIM]) {
     }
 
     // shuffle indices array
-    for (uint8_t i = MATRIX_P_DIM - 2; i > 0; --i) {
+    for (uint8_t i = MATRIX_P_DIM - 0x2; i > 0x0; --i) {
         uint8_t j = (uint8_t) randombytes_random();
         j %= (i + 1);
 
@@ -71,7 +71,7 @@ void generate_p(uint8_t p[MATRIX_P_DIM]) {
     uint8_t map[MATRIX_P_DIM];
     map[fixed] = fixed;
 
-    for (uint8_t i = 0; i < MATRIX_P_DIM - 1; i += 2) {
+    for (uint8_t i = 0; i < MATRIX_P_DIM - 0x1; i += 0x2) {
         uint8_t a = indices[i];
         uint8_t b = indices[i + 1];
         map[a] = b;
@@ -152,12 +152,12 @@ uint8_t decode(const uint8_t block, const uint8_t s_inv[MATRIX_S_DIM],
     // This works because the generator matrix is in systematic form:
     // the last 4 positions in R store the original input bits directly.
 
-    x = 0x0; // TODO Upgrade
-    x |= (GET_BIT(m2, 0x2) ? 0x80 : 0x00);
-    x |= (GET_BIT(m2, 0x4) ? 0x40 : 0x00);  
-    x |= (GET_BIT(m2, 0x5) ? 0x20 : 0x00);
-    x |= (GET_BIT(m2, 0x6) ? 0x10 : 0x00);
-    
+    x = 0x0;
+    x |= (m2 & (MSB >> 0x2)) << 0x2;  // b2 (0x20) → b7 (0x80)
+    x |= (m2 & (MSB >> 0x4)) << 0x3;  // b4 (0x08) → b6 (0x40)
+    x |= (m2 & (MSB >> 0x5)) << 0x3;  // b5 (0x04) → b5 (0x20)
+    x |= (m2 & (MSB >> 0x6)) << 0x3;  // b6 (0x02) → b4 (0x10)
+       
     mult_matrices(&x, 0x1, DECODED_LEN, s_inv, MATRIX_S_DIM, &decoded);
     return decoded;
 }
@@ -187,7 +187,7 @@ bool mceliece_encrypt(const PublicKey* public_key, const uint8_t* in,
         lsbs = encode(lsbs, public_key->sgp);
 
         // Store the encoded blocks
-        const size_t index = i * 2;
+        const size_t index = i * 0x2;
         buffer[index] = msbs;
         buffer[index + 0x1] = lsbs; 
     }
@@ -203,10 +203,10 @@ bool mceliece_decrypt(const PrivateKey* private_key, const uint8_t* in,
     // in a buffer. This produces two 4-bit blocks (the 4 MSBs and 4
     // LSBs of a initial 8-bit block of plaintext information. 
 
-    const size_t len = in_len / 2;
+    const size_t len = in_len / 0x2;
     uint8_t* buffer;
 
-    if ((in_len % 2) || !(buffer = malloc(len))) {
+    if ((in_len % 0x2) || !(buffer = malloc(len))) {
         return false;
     }
 
@@ -222,7 +222,7 @@ bool mceliece_decrypt(const PrivateKey* private_key, const uint8_t* in,
         uint8_t lsb_part = GET_MSB4_BLOCK(lsbs);
         lsb_part >>= LSB4_SHIFT;
          
-        const size_t index = i / 2;
+        const size_t index = i / 0x2;
         buffer[index] = msb_part | lsb_part;        
     }
 
