@@ -32,7 +32,7 @@ git submodule update --init --recursive
 ```
 
 The `CMakePresets.json` file supports building for `x64` and `x86` architectures, in any mode `debug` or `release` for 
-Linux and Windows. The compilation process is very simple: first you must choose one preset and the compile that preset.
+Linux and Windows. The compilation process is very simple: first you must choose a preset and the compile that preset.
 These are some examples:
 
 ```sh
