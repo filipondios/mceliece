@@ -74,7 +74,7 @@ template <std::size_t N>
 
 // y*P^-1 = m*S*G + e*P^-1, then fix 1 error & extract m*S -> *S^-1
 [[nodiscard]] std::uint8_t decode(std::uint8_t word, const secret_key &sk) {
-  // deshacer la permutación: P^-1 = P^T
+  // undo the permutation: P^-1 = P^T
   // then syndrome s = r * Ht, (1,7)x(7,3)
   auto r = to_row<p_dim>(word) * sk.pi;
   const auto s = r * hamming_ht;
