@@ -10,7 +10,7 @@
 
 namespace {
 
-// Palabra de codigo sin error para un nibble: m * (S*G*P).
+// Error-free codeword for a nibble: m * (S*G*P).
 std::uint8_t clean_codeword(unsigned nibble, const public_key &pk) {
   return static_cast<std::uint8_t>(
       (row_vector<4>(nibble) * pk).data[0].to_ulong());
@@ -25,8 +25,7 @@ std::vector<std::uint8_t> all_bytes() {
 
 } // namespace
 
-TEST_CASE("decode: corrige cualquier error simple en cualquier posicion",
-          "[decode]") {
+TEST_CASE("decode: corrects any single error in any position", "[decode]") {
   for (int key = 0; key < 10; ++key) {
     const auto kp = keygen();
 
@@ -34,18 +33,17 @@ TEST_CASE("decode: corrige cualquier error simple en cualquier posicion",
       const auto cw = clean_codeword(nibble, kp.pub);
       CHECK(decode(cw, kp.sec) == nibble);
 
-      // error en cada una de las 7 posiciones
+      // error in each of the 7 positions
       for (unsigned k = 0; k < 7; ++k) {
         const auto noisy = static_cast<std::uint8_t>(cw ^ (1u << k));
-        INFO("nibble=" << nibble << " error en posicion " << k);
+        INFO("nibble=" << nibble << " error at position " << k);
         CHECK(decode(noisy, kp.sec) == nibble);
       }
     }
   }
 }
 
-TEST_CASE("encode: añade exactamente un error a la palabra de codigo",
-          "[encode]") {
+TEST_CASE("encode: adds exactly one error to the codeword", "[encode]") {
   const auto kp = keygen();
 
   for (unsigned nibble = 0; nibble < 16; ++nibble) {
@@ -53,13 +51,13 @@ TEST_CASE("encode: añade exactamente un error a la palabra de codigo",
 
     for (int n = 0; n < 50; ++n) {
       const auto word = encode(static_cast<std::uint8_t>(nibble), kp.pub);
-      CHECK((word & 0x80u) == 0); // solo 7 bits
+      CHECK((word & 0x80u) == 0); // only 7 bits
       CHECK(std::popcount(static_cast<unsigned>(word ^ cw)) == 1);
     }
   }
 }
 
-TEST_CASE("encode: el error aparece en las 7 posiciones", "[encode]") {
+TEST_CASE("encode: the error appears in all 7 positions", "[encode]") {
   const auto kp = keygen();
   const auto cw = clean_codeword(0b1010, kp.pub);
 
@@ -73,7 +71,7 @@ TEST_CASE("encode: el error aparece en las 7 posiciones", "[encode]") {
   CHECK(positions.size() == 7);
 }
 
-TEST_CASE("encode/decode: ida y vuelta de los 16 nibbles", "[roundtrip]") {
+TEST_CASE("encode/decode: round trip for all 16 nibbles", "[roundtrip]") {
   for (int key = 0; key < 10; ++key) {
     const auto kp = keygen();
 
@@ -87,8 +85,7 @@ TEST_CASE("encode/decode: ida y vuelta de los 16 nibbles", "[roundtrip]") {
   }
 }
 
-TEST_CASE("encrypt/decrypt: ida y vuelta con los 256 valores de byte",
-          "[encrypt]") {
+TEST_CASE("encrypt/decrypt: round trip with all 256 byte values", "[encrypt]") {
   const auto kp = keygen();
   const auto plain = all_bytes();
   const auto cipher = encrypt(kp.pub, plain);
@@ -97,27 +94,31 @@ TEST_CASE("encrypt/decrypt: ida y vuelta con los 256 valores de byte",
   CHECK(*back == plain);
 }
 
-TEST_CASE("encrypt/decrypt: mensaje vacio", "[encrypt]") {
+TEST_CASE("encrypt/decrypt: empty message", "[encrypt]") {
   const auto kp = keygen();
   const std::vector<std::uint8_t> empty;
+
   const auto cipher = encrypt(kp.pub, empty);
   CHECK(cipher.empty());
+
   const auto back = decrypt(kp.sec, cipher);
   REQUIRE(back.has_value());
   CHECK(back->empty());
 }
 
-TEST_CASE("encrypt: el cifrado ocupa el doble y usa palabras de 7 bits",
+TEST_CASE("encrypt: ciphertext is twice the size and uses 7-bit words",
           "[encrypt]") {
   const auto kp = keygen();
   const auto plain = all_bytes();
+
   const auto cipher = encrypt(kp.pub, plain);
+
   CHECK(cipher.size() == plain.size() * 2);
   CHECK(std::ranges::all_of(cipher,
                             [](std::uint8_t b) { return (b & 0x80u) == 0; }));
 }
 
-TEST_CASE("encrypt: es probabilistico (mismo mensaje, distinto cifrado)",
+TEST_CASE("encrypt: is probabilistic (same message, different ciphertext)",
           "[encrypt]") {
   const auto kp = keygen();
   const auto plain = all_bytes();
@@ -125,28 +126,28 @@ TEST_CASE("encrypt: es probabilistico (mismo mensaje, distinto cifrado)",
   const auto c2 = encrypt(kp.pub, plain);
   CHECK(c1 != c2);
 
-  // ...pero ambos descifran al mismo mensaje
+  // ...but both decrypt to the same message
   CHECK(decrypt(kp.sec, c1) == std::optional{plain});
   CHECK(decrypt(kp.sec, c2) == std::optional{plain});
 }
 
-TEST_CASE("decrypt: tamano impar devuelve nullopt", "[decrypt]") {
+TEST_CASE("decrypt: odd size returns nullopt", "[decrypt]") {
   const auto kp = keygen();
   const std::vector<std::uint8_t> odd(5, 0);
   CHECK_FALSE(decrypt(kp.sec, odd).has_value());
 }
 
-TEST_CASE("decrypt: una clave distinta no recupera el mensaje", "[decrypt]") {
+TEST_CASE("decrypt: a different key does not recover the message",
+          "[decrypt]") {
   const auto kp1 = keygen();
   const auto kp2 = keygen();
   const auto plain = all_bytes();
   const auto cipher = encrypt(kp1.pub, plain);
   const auto wrong = decrypt(kp2.sec, cipher);
 
-  // Si por casualidad kp1 == kp2 el test no tiene sentido: se omite.
+  // If by chance kp1 == kp2 the test is meaningless: it is skipped.
   if (kp1.sec.s.data == kp2.sec.s.data && kp1.sec.p.data == kp2.sec.p.data)
-    SKIP("claves identicas por azar");
-
+    SKIP("identical keys by chance");
   REQUIRE(wrong.has_value());
   CHECK(*wrong != plain);
 }

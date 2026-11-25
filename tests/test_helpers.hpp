@@ -8,7 +8,7 @@
 
 using namespace mceliece::hc743;
 
-// Compara dos matrices y, si falla, imprime ambas (columna 0 a la izquierda).
+// Compares two matrices and, on failure, prints both (column 0 on the left).
 #define CHECK_MATRIX_EQ(actual, expected)                                      \
   do {                                                                         \
     const auto &m_actual_ = (actual);                                          \
@@ -39,7 +39,7 @@ template <std::size_t R, std::size_t C>
   return true;
 }
 
-// Vector fila 1xC a partir de un entero (bit k = columna k).
+// Row vector 1xC from an integer (bit k = column k).
 template <std::size_t C>
 [[nodiscard]] bit_matrix<1, C> row_vector(unsigned long long v) {
   bit_matrix<1, C> m{};
@@ -47,7 +47,7 @@ template <std::size_t C>
   return m;
 }
 
-// Matriz 4x4 a partir de 16 bits: la fila i son los bits 4i..4i+3.
+// 4x4 matrix from 16 bits: row i is bits 4i..4i+3.
 [[nodiscard]] inline bit_matrix<4, 4> matrix4_from_bits(std::uint32_t v) {
   bit_matrix<4, 4> m{};
   for (std::size_t i = 0; i < 4; ++i)
@@ -55,9 +55,10 @@ template <std::size_t C>
   return m;
 }
 
-// PRNG determinista (splitmix64) SOLO para tests reproducibles.
+// Deterministic PRNG (splitmix64) ONLY for reproducible tests.
 struct splitmix64 {
   std::uint64_t state;
+
   std::uint64_t next() {
     std::uint64_t z = (state += 0x9E3779B97F4A7C15ULL);
     z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
@@ -74,5 +75,5 @@ template <std::size_t R, std::size_t C>
   return m;
 }
 
-// libsodium debe estar iniciada antes de llamar a randombytes_* directamente.
+// libsodium must be initialized before calling randombytes_* directly.
 inline void init_sodium() { REQUIRE(sodium_init() >= 0); }

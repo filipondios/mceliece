@@ -1,9 +1,9 @@
 #include "test_helpers.hpp"
 #include <type_traits>
 
-TEST_CASE("bit_matrix: producto conocido (no cuadrado)", "[bit_matrix]") {
-  // Convención: el bit k de una fila es la columna k.
-  // A(2x3) * B(3x2) sobre GF(2):
+TEST_CASE("bit_matrix: known product (non-square)", "[bit_matrix]") {
+  // Convention: bit k of a row is column k.
+  // A(2x3) * B(3x2) over GF(2):
   //   C[0] = B[0] ^ B[1] = 01 ^ 11 = 10
   //   C[1] = B[0] ^ B[2] = 01 ^ 10 = 11
   const bit_matrix<2, 3> a{{0b011, 0b101}};
@@ -12,7 +12,7 @@ TEST_CASE("bit_matrix: producto conocido (no cuadrado)", "[bit_matrix]") {
   CHECK_MATRIX_EQ(a * b, expected);
 }
 
-TEST_CASE("bit_matrix: la identidad es el elemento neutro", "[bit_matrix]") {
+TEST_CASE("bit_matrix: identity is the neutral element", "[bit_matrix]") {
   splitmix64 rng{1};
 
   for (int n = 0; n < 100; ++n) {
@@ -22,7 +22,7 @@ TEST_CASE("bit_matrix: la identidad es el elemento neutro", "[bit_matrix]") {
   }
 }
 
-TEST_CASE("bit_matrix: multiplicar por la matriz cero da cero",
+TEST_CASE("bit_matrix: multiplying by the zero matrix gives zero",
           "[bit_matrix]") {
   splitmix64 rng{2};
   const auto a = random_matrix<4, 7>(rng);
@@ -30,7 +30,7 @@ TEST_CASE("bit_matrix: multiplicar por la matriz cero da cero",
   CHECK(is_zero(a * bit_matrix<7, 3>{}));
 }
 
-TEST_CASE("bit_matrix: asociatividad", "[bit_matrix]") {
+TEST_CASE("bit_matrix: associativity", "[bit_matrix]") {
   splitmix64 rng{3};
 
   for (int n = 0; n < 100; ++n) {
@@ -41,7 +41,7 @@ TEST_CASE("bit_matrix: asociatividad", "[bit_matrix]") {
   }
 }
 
-TEST_CASE("bit_matrix: distributividad sobre la suma (XOR)", "[bit_matrix]") {
+TEST_CASE("bit_matrix: distributivity over addition (XOR)", "[bit_matrix]") {
   splitmix64 rng{4};
 
   for (int n = 0; n < 100; ++n) {
@@ -62,7 +62,7 @@ TEST_CASE("bit_matrix: distributividad sobre la suma (XOR)", "[bit_matrix]") {
   }
 }
 
-TEST_CASE("bit_matrix: transpose cambia las dimensiones y los elementos",
+TEST_CASE("bit_matrix: transpose swaps dimensions and elements",
           "[bit_matrix][transpose]") {
   const bit_matrix<2, 3> a{{0b011, 0b100}};
   const auto t = a.transpose();
@@ -75,8 +75,7 @@ TEST_CASE("bit_matrix: transpose cambia las dimensiones y los elementos",
       CHECK(t.data[j][i] == a.data[i][j]);
 }
 
-TEST_CASE("bit_matrix: transpose es una involucion",
-          "[bit_matrix][transpose]") {
+TEST_CASE("bit_matrix: transpose is an involution", "[bit_matrix][transpose]") {
   splitmix64 rng{5};
 
   for (int n = 0; n < 100; ++n) {
@@ -95,8 +94,7 @@ TEST_CASE("bit_matrix: (A*B)^T == B^T * A^T", "[bit_matrix][transpose]") {
   }
 }
 
-TEST_CASE("bit_matrix: to_string imprime una fila por linea, columna 0 a la "
-          "izquierda",
+TEST_CASE("bit_matrix: to_string prints one row per line, column 0 on the left",
           "[bit_matrix][to_string]") {
   const bit_matrix<2, 3> m{{0b011, 0b100}};
   CHECK(m.to_string() == "110\n001\n");

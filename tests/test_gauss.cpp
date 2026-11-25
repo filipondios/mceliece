@@ -1,47 +1,44 @@
 #include "test_helpers.hpp"
 
-// gauss(const bit_matrix<N,N>&) -> std::optional<bit_matrix<N,N>>
-// (si usas otro espacio de nombres o cabecera, ajusta el include de abajo)
-#include "mceliece.hpp"
-
-TEST_CASE("gauss: la inversa de la identidad es la identidad", "[gauss]") {
+TEST_CASE("gauss: the inverse of the identity is the identity", "[gauss]") {
   const auto inv = gauss(identity<4>());
   REQUIRE(inv.has_value());
   CHECK_MATRIX_EQ(*inv, identity<4>());
 }
 
-TEST_CASE("gauss: matriz triangular conocida es invertible", "[gauss]") {
+TEST_CASE("gauss: known triangular matrix is invertible", "[gauss]") {
   const bit_matrix<4, 4> m{{0b0001, 0b0011, 0b0111, 0b1111}};
   const auto inv = gauss(m);
+
   REQUIRE(inv.has_value());
   CHECK_MATRIX_EQ(m * *inv, identity<4>());
   CHECK_MATRIX_EQ(*inv * m, identity<4>());
 }
 
-TEST_CASE("gauss: matrices singulares devuelven nullopt", "[gauss]") {
-  SECTION("matriz cero") { CHECK_FALSE(gauss(bit_matrix<4, 4>{}).has_value()); }
-  SECTION("dos filas iguales") {
+TEST_CASE("gauss: singular matrices return nullopt", "[gauss]") {
+  SECTION("zero matrix") { CHECK_FALSE(gauss(bit_matrix<4, 4>{}).has_value()); }
+  SECTION("two equal rows") {
     const bit_matrix<4, 4> m{{0b0011, 0b0011, 0b1100, 0b1001}};
     CHECK_FALSE(gauss(m).has_value());
   }
-  SECTION("la suma de todas las filas es cero") {
+  SECTION("the sum of all rows is zero") {
     // 0011 ^ 0110 ^ 1100 ^ 1001 == 0000
     const bit_matrix<4, 4> m{{0b0011, 0b0110, 0b1100, 0b1001}};
     CHECK_FALSE(gauss(m).has_value());
   }
-  SECTION("una columna entera a cero") {
+  SECTION("a whole column is zero") {
     const bit_matrix<4, 4> m{{0b0001, 0b0010, 0b1000, 0b1011}};
     CHECK_FALSE(gauss(m).has_value());
   }
 }
 
-TEST_CASE("gauss: casos 1x1", "[gauss]") {
+TEST_CASE("gauss: 1x1 cases", "[gauss]") {
   CHECK(gauss(bit_matrix<1, 1>{{0b1}}).has_value());
   CHECK_FALSE(gauss(bit_matrix<1, 1>{{0b0}}).has_value());
 }
 
-TEST_CASE("gauss: exhaustivo sobre las 65536 matrices 4x4", "[gauss]") {
-  // Hay exactamente 20160 matrices invertibles 4x4 sobre GF(2).
+TEST_CASE("gauss: exhaustive over all 65536 4x4 matrices", "[gauss]") {
+  // There are exactly 20160 invertible 4x4 matrices over GF(2).
   std::size_t invertible = 0;
   std::size_t wrong_inverse = 0;
   const auto id = identity<4>();
@@ -61,7 +58,7 @@ TEST_CASE("gauss: exhaustivo sobre las 65536 matrices 4x4", "[gauss]") {
   CHECK(wrong_inverse == 0);
 }
 
-TEST_CASE("gauss: la inversa de la inversa es la original", "[gauss]") {
+TEST_CASE("gauss: the inverse of the inverse is the original", "[gauss]") {
   splitmix64 rng{7};
   int checked = 0;
 
@@ -78,13 +75,13 @@ TEST_CASE("gauss: la inversa de la inversa es la original", "[gauss]") {
   }
 }
 
-TEST_CASE("gauss: funciona con otros tamanos (rotacion 7x7)", "[gauss]") {
-  // Matriz de permutacion: su inversa es su transpuesta.
+TEST_CASE("gauss: works with other sizes (7x7 rotation)", "[gauss]") {
+  // Permutation matrix: its inverse is its transpose.
   bit_matrix<7, 7> rot{};
   for (std::size_t i = 0; i < 7; ++i)
     rot.data[i].set((i + 1) % 7);
-  const auto inv = gauss(rot);
 
+  const auto inv = gauss(rot);
   REQUIRE(inv.has_value());
   CHECK_MATRIX_EQ(*inv, rot.transpose());
   CHECK_MATRIX_EQ(rot * *inv, identity<7>());
