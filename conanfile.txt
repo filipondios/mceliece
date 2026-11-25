@@ -1,0 +1,7 @@
+[requires]
+libsodium/1.0.20
+catch2/3.7.1
+
+[generators]
+CMakeDeps
+CMakeToolchain
